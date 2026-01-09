@@ -1,7 +1,8 @@
 import requests
 from telegram.ext import Updater, CommandHandler
 
-TOKEN = "BOT_TOKEN_CUA_BAN"
+import os
+TOKEN = os.getenv("BOT_TOKEN")
 API_URL = "http://abcdxyz310107.x10.mx/apifl.php"
 
 def start(update, context):
