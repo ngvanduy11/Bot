@@ -1,12 +1,13 @@
-import requests
-from telegram.ext import Updater, CommandHandler
-
 import os
+import requests
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+
 TOKEN = os.getenv("BOT_TOKEN")
 API_URL = "http://abcdxyz310107.x10.mx/apifl.php"
 
-def start(update, context):
-    update.message.reply_text(
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
         "🤖 BOT BUFF\n\n"
         "Cách dùng:\n"
         "/buff <username> <số_lượng>\n\n"
@@ -14,7 +15,7 @@ def start(update, context):
         "/buff _l0v3ly.10 100"
     )
 
-def buff(update, context):
+async def buff(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         username = context.args[0]
         amount = context.args[1]
@@ -27,29 +28,26 @@ def buff(update, context):
         r = requests.get(API_URL, params=params, timeout=30)
         data = r.json()
 
-        if data["status"] == "success":
-            update.message.reply_text(
+        if data.get("status") == "success":
+            await update.message.reply_text(
                 f"✅ BUFF THÀNH CÔNG\n"
-                f"👤 User: {data['username']}\n"
-                f"🔥 Số lượng: {data['amount']}"
+                f"👤 User: {username}\n"
+                f"🔥 Số lượng: {amount}"
             )
         else:
-            update.message.reply_text(f"❌ Lỗi: {data['message']}")
+            await update.message.reply_text(f"❌ Lỗi: {data}")
 
-    except IndexError:
-        update.message.reply_text("⚠️ Sai cú pháp\n/buff <username> <số_lượng>")
-    except Exception as e:
-        update.message.reply_text(f"❌ Lỗi hệ thống:\n{e}")
+    except:
+        await update.message.reply_text("⚠️ Dùng đúng cú pháp:\n/buff <username> <số_lượng>")
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
-    dp = updater.dispatcher
+    app = ApplicationBuilder().token(TOKEN).build()
 
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("buff", buff))
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("buff", buff))
 
-    updater.start_polling()
-    updater.idle()
+    print("🤖 Bot đang chạy...")
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
