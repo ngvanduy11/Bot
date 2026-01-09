@@ -3,58 +3,53 @@ import requests
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-# ====== CẤU HÌNH ======
-TOKEN = os.getenv("BOT_TOKEN")  # nhớ export BOT_TOKEN trong Termux
+TOKEN = os.getenv("BOT_TOKEN")
 API_URL = "http://abcdxyz310107.x10.mx/apifl.php"
 
-# ====== /start ======
+# /start
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🤖 BOT BUFF\n\n"
-        "Cách dùng:\n"
-        "/buff <username> <số_lượng>\n\n"
+        "🤖 BUFF TOOL\n\n"
+        "Cách dùng (giống tool gốc):\n"
+        "/fl1 <username>\n\n"
         "Ví dụ:\n"
-        "/buff _l0v3ly.10 100"
+        "/fl1 mhien.1m50"
     )
 
-# ====== /buff ======
-async def buff(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# /fl1
+async def fl1(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         username = context.args[0]
-        amount = context.args[1]  # chỉ để hiển thị (API không dùng)
 
-        # API của bạn cần fl1=username=xxx
-        params = {
-            "fl1": f"username={username}"
-        }
+        # GỌI API GIỐNG Y HỆT TOOL NGƯỜI TA
+        url = f"{API_URL}?fl1={username}"
+        r = requests.get(url, timeout=30)
 
-        r = requests.get(API_URL, params=params, timeout=30)
-
-        # API có thể trả text hoặc json
+        # API trả JSON
         try:
             data = r.json()
-            api_msg = data
+            msg = (
+                f"✅ Thành công\n"
+                f"👤 User: {data.get('username')}\n"
+                f"👥 Trước: {data.get('followers_before')}\n"
+                f"👥 Sau: {data.get('followers_now')}\n"
+                f"➕ Tăng: {data.get('followers_increased')}"
+            )
         except:
-            api_msg = r.text
+            msg = r.text
 
-        await update.message.reply_text(
-            f"✅ Đã gửi buff\n"
-            f"👤 User: {username}\n"
-            f"🔥 Số lượng: {amount}\n\n"
-            f"📩 Phản hồi API:\n{api_msg}"
-        )
+        await update.message.reply_text(msg)
 
     except:
         await update.message.reply_text(
-            "⚠️ Sai cú pháp\n/buff <username> <số_lượng>"
+            "⚠️ Dùng đúng cú pháp:\n/fl1 <username>"
         )
 
-# ====== MAIN ======
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("buff", buff))
+    app.add_handler(CommandHandler("fl1", fl1))
 
     print("🤖 Bot đang chạy...")
     app.run_polling()
